@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-minimal
+  namespace: test
+  # labels:
+  #   app: test
+  #   env: test
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-minimal
+  template:
+    metadata:
+      labels:
+        app: nginx-minimal
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.23.3
+          ports:
+            - containerPort: 80
+              protocol: TCP
+
+          # readinessProbe: # I always recommend using these, even if your app has no listening ports (this affects any rolling update)
+          #   httpGet: # Lots of timeout values with defaults, be sure they are ideal for your workload
+          #     path: /
+          #     port: 8080
+          # livenessProbe: # only needed if your app tends to go unresponsive or you don't have a readinessProbe, but this is up for debate
+          #   httpGet: # Lots of timeout values with defaults, be sure they are ideal for your workload
+          #     path: /
+          #     port: 8080
+
+          resources:
+            limits:
+              cpu: 250m
+              memory: 50Mi
+            requests:
+              cpu: 250m
+              memory: 50Mi
+
+          # per-container security context
+          # lock down privileges inside the container
+          securityContext:
+            allowPrivilegeEscalation: false # prevent sudo, etc.
+            privileged: false # prevent acting like host root
+
+
+      # terminationGracePeriodSeconds: 600 # default is 30, but you may need more time to gracefully shutdown (HTTP long polling, user uploads, etc)
+
+      # # per-pod security context
+      # # enable seccomp and force non-root user
+      # securityContext:
+
+      #   seccompProfile:
+      #     type: RuntimeDefault   # enable seccomp and the runtimes default profile
+
+      #   runAsUser: 1001          # hardcode user to non-root if not set in Dockerfile
+      #   runAsGroup: 1001         # hardcode group to non-root if not set in Dockerfile
+      #   runAsNonRoot: true
