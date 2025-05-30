@@ -1,0 +1,36 @@
+global:
+  domain: 140.238.121.96
+
+configs:
+  params:
+    server.insecure: true
+    server.rootpath: /argocd
+    server.basehref: /argocd
+
+server:
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+  extraArgs:
+    - --insecure
+    - --rootpath
+    - /argocd
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+applicationSet:
+  enabled: true
+
+redis:
+  enabled: true
+
+repoServer:
+  replicas: 1
+
+controller:
+  replicas: 1
