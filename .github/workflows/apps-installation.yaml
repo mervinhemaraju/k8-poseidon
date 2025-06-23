@@ -57,10 +57,12 @@ jobs:
           echo "tenancy=${{ steps.doppler.outputs.OCI_POSEIDON_TENANCY_OCID }}" >> ~/.oci/config
           echo "region=${{ env.OCI_POSEIDON_REGION }}" >> ~/.oci/config
 
-      - name: Download and Install OCI CLI
+      - name: Install OCI CLI
         run: |
-          curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh | sudo bash -s -- --accept-all-defaults --skip-setup
-          echo "export PATH=\$PATH:/home/runner/bin" >> $GITHUB_ENV
+          curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh > install.sh
+          chmod +x install.sh
+          ./install.sh --accept-all-defaults
+          echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: RUN OCI CLI
         run: |
