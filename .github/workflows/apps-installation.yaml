@@ -24,6 +24,7 @@ on:
 #   OKE_CLUSTER_OCID: ${{ secrets.OKE_CLUSTER_OCID }}
 env:
   KFILTVERSION: "0.0.8"
+  OCI_REGION: "uk-london-1"
 
 jobs:
   deploy:
@@ -34,20 +35,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - uses: dopplerhq/secrets-fetch-action@v1.3.0
+      - name: "Authenticate to Doppler Secrets"
+        uses: dopplerhq/secrets-fetch-action@v1.3.0
         id: doppler
         with:
           doppler-token: ${{ secrets.DOPPLER_TOKEN }}
           doppler-project: cloud-iac-main
           doppler-config: prd
 
+      - name: "Setup OCI Env Vars"
+        run: |
+
+          # Then set them as environment variables
+          echo "OCI_CLI_USER=${{ steps.doppler.outputs.OCI_POSEIDON_USER_OCID }}" >> $GITHUB_ENV
+          echo "OCI_CLI_TENANCY=${{ steps.doppler.outputs.OCI_POSEIDON_TENANCY_OCID }}" >> $GITHUB_ENV
+          echo "OCI_CLI_FINGERPRINT=${{ steps.doppler.outputs.OCI_POSEIDON_FINGERPRINT }}" >> $GITHUB_ENV
+          echo "OCI_CLI_KEY_CONTENT=${{ steps.doppler.outputs.OCI_POSEIDON_PRIVATE_KEY }}" >> $GITHUB_ENV
+          echo "OCI_CLI_REGION=$OCI_REGION" >> $GITHUB_ENV
+
+      - name: Retrieve the OCID of a named compartment in tenancy
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        id: find-compartment-id
+        with:
+          command: "iam compartment list --compartment-id-in-subtree=true"
+
       - name: Install Kfilt
         run: |
           wget -O /usr/local/bin/kfilt https://github.com/ryane/kfilt/releases/download/v${KFILTVERSION}/kfilt_${KFILTVERSION}_linux_amd64
           chmod +x /usr/local/bin/kfilt
-
-      - run: echo "DOPPLER_PROJECT is ${{ steps.doppler.outputs.DOPPLER_PROJECT }} (Doppler meta environment variables are unmasked)"
-      - run: echo "TESTING is ${{ steps.doppler.outputs.OCI_GAIA_FINGERPRINT }} (secret masked output)"
 
     #   - name: Configure OCI CLI
     #     run: |
