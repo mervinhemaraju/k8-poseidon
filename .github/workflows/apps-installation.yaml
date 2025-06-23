@@ -1,0 +1,106 @@
+name: Deploy Applications to K8 Cluster
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# env:
+#   OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+#   OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+#   OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+#   OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+#   OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
+#   OKE_CLUSTER_OCID: ${{ secrets.OKE_CLUSTER_OCID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install OCI CLI
+        run: |
+          echo "WORKING!"
+
+    #   - name: Configure OCI CLI
+    #     run: |
+    #       mkdir -p ~/.oci
+    #       echo "[DEFAULT]" > ~/.oci/config
+    #       echo "user=$OCI_CLI_USER" >> ~/.oci/config
+    #       echo "fingerprint=$OCI_CLI_FINGERPRINT" >> ~/.oci/config
+    #       echo "tenancy=$OCI_CLI_TENANCY" >> ~/.oci/config
+    #       echo "region=$OCI_CLI_REGION" >> ~/.oci/config
+    #       echo "key_file=~/.oci/oci_api_key.pem" >> ~/.oci/config
+    #       echo "$OCI_CLI_KEY_CONTENT" > ~/.oci/oci_api_key.pem
+    #       chmod 600 ~/.oci/oci_api_key.pem
+    #       chmod 600 ~/.oci/config
+
+    #   - name: Generate Kubeconfig for OKE
+    #     run: |
+    #       oci ce cluster create-kubeconfig \
+    #         --cluster-id $OKE_CLUSTER_OCID \
+    #         --file $HOME/.kube/config \
+    #         --region $OCI_CLI_REGION \
+    #         --token-version 2.0.0 \
+    #         --kube-endpoint PUBLIC_ENDPOINT
+
+    #   - name: Install kubectl
+    #     uses: azure/setup-kubectl@v3
+    #     with:
+    #       version: 'v1.28.0'
+
+    #   - name: Install Kustomize
+    #     run: |
+    #       curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+    #       sudo mv kustomize /usr/local/bin/
+
+    #   - name: Test cluster connectivity
+    #     run: |
+    #       kubectl cluster-info
+    #       kubectl get nodes
+
+    #   - name: Create namespace if not exists
+    #     run: |
+    #       kubectl create namespace es --dry-run=client -o yaml | kubectl apply -f -
+
+    #   - name: Deploy External Secrets
+    #     run: |
+    #       cd apps/external-secrets
+    #       kustomize build . | kubectl apply -f -
+
+    #   - name: Wait for External Secrets deployment
+    #     run: |
+    #       kubectl -n es rollout status deployment/external-secrets
+    #       kubectl -n es rollout status deployment/external-secrets-webhook
+    #       kubectl -n es rollout status deployment/external-secrets-cert-controller
+
+    #   - name: Verify deployment
+    #     run: |
+    #       echo "=== External Secrets Pods ==="
+    #       kubectl -n es get pods
+    #       echo ""
+    #       echo "=== ClusterSecretStore Status ==="
+    #       kubectl -n es get clustersecretstore
+    #       echo ""
+    #       echo "=== ClusterExternalSecret Status ==="
+    #       kubectl -n es get clusterexternalsecret
+
+    #   - name: Check ClusterSecretStore health
+    #     run: |
+    #       kubectl -n es describe clustersecretstore oci-vault-store
+
+    #   - name: Label namespaces for secret sync (example)
+    #     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    #     run: |
+    #       # Example: Label default namespace to receive secrets
+    #       kubectl label namespace default external-secrets=enabled --overwrite
+
+    #       # Add more namespaces as needed
+    #       # kubectl label namespace app-namespace external-secrets=enabled --overwrite
