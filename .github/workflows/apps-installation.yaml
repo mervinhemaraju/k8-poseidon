@@ -44,6 +44,11 @@ jobs:
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
           sudo mv kustomize /usr/local/bin/
 
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.12.0"
+
       - name: "Authenticate to Doppler Secrets"
         uses: dopplerhq/secrets-fetch-action@v1.3.0
         id: doppler
@@ -61,8 +66,9 @@ jobs:
           # Create local variable for private key path
           KEY_PATH=~/.oci/oci_api_key.pem 
 
-          # Append OCI_API_KEY to the key file
-          echo "OCI_API_KEY" >> $KEY_PATH   
+          # Append an extra line with 'OCI_API_KEY' at the end
+          echo "\nOCI_API_KEY" >> $KEY_PATH
+
 
           # Create the oci_api_key.pem file
           echo "${{ steps.doppler.outputs.OCI_POSEIDON_PRIVATE_KEY }}" > $KEY_PATH
@@ -132,3 +138,23 @@ jobs:
       - name: Test Cluster Connectivity
         run: |
           kubectl cluster-info
+
+      - name: Install External Secrets Operator
+        run: |
+
+          echo "Creating the es namespace..."
+          kubectl create namespace es || echo "Namespace es already exists"
+
+          echo "Installing External Secrets..."
+          cd apps/
+          kubectl kustomize --enable-helm external-secrets/ > external-secrets-config.yaml
+          kfilt -i kind=CustomResourceDefinition -f external-secrets-config.yaml | kubectl -n es apply -f -
+          kfilt -i kind=CustomResourceDefinition -f external-secrets-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
+          kubectl -n es apply -f external-secrets-config.yaml
+
+          echo "Waiting for External Secrets Operator to be ready..."
+          kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets --timeout=300s
+          kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets-webhook --timeout=300s
+          kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets-cert-controller --timeout=300s
+
+          echo "External Secrets installation completed"
