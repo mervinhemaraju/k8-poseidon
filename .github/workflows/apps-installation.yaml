@@ -15,13 +15,6 @@ on:
       - main
   workflow_dispatch:
 
-# env:
-#   OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
-#   OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
-#   OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
-#   OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-#   OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
-#   OKE_CLUSTER_OCID: ${{ secrets.OKE_CLUSTER_OCID }}
 env:
   KFILTVERSION: "0.0.8"
   OCI_POSEIDON_REGION: "uk-london-1"
@@ -43,21 +36,41 @@ jobs:
           doppler-project: cloud-iac-main
           doppler-config: prd
 
-      - name: "Setup OCI Env Vars"
+      - name: "Setup OCI Config File"
         run: |
 
-          # Then set them as environment variables
-          echo "OCI_CLI_USER=${{ steps.doppler.outputs.OCI_POSEIDON_USER_OCID }}" >> $GITHUB_ENV
-          echo "OCI_CLI_TENANCY=${{ steps.doppler.outputs.OCI_POSEIDON_TENANCY_OCID }}" >> $GITHUB_ENV
-          echo "OCI_CLI_FINGERPRINT=${{ steps.doppler.outputs.OCI_POSEIDON_FINGERPRINT }}" >> $GITHUB_ENV
-          echo "OCI_CLI_KEY_CONTENT=${{ steps.doppler.outputs.OCI_POSEIDON_PRIVATE_KEY }}" >> $GITHUB_ENV
-          echo "OCI_CLI_REGION=${{ env.OCI_POSEIDON_REGION }}" >> $GITHUB_ENV
+          # Create the oci directory if it doesn't exist
+          mkdir -p ~/.oci
 
-      - name: Retrieve the OCID of a named compartment in tenancy
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        id: find-compartment-id
-        with:
-          command: "iam compartment list --compartment-id-in-subtree=true"
+          # Create local variable for private key path
+          KEY_PATH=~/.oci/oci_api_key.pem 
+
+          # Create the oci_api_key.pem file
+          echo "${{ steps.doppler.outputs.OCI_POSEIDON_PRIVATE_KEY }}" > $KEY_PATH
+          chmod 600 ~/.oci/oci_api_key.pem
+
+          # Create the config file
+          echo "[DEFAULT]" > ~/.oci/config
+          echo "user=${{ steps.doppler.outputs.OCI_POSEIDON_USER_OCID }}" >> ~/.oci/config
+          echo "fingerprint=${{ steps.doppler.outputs.OCI_POSEIDON_FINGERPRINT }}" >> ~/.oci/config
+          echo "key_file=$KEY_PATH" >> ~/.oci/config
+          echo "tenancy=${{ steps.doppler.outputs.OCI_POSEIDON_TENANCY_OCID }}" >> ~/.oci/config
+          echo "region=${{ env.OCI_POSEIDON_REGION }}" >> ~/.oci/config
+
+      - name: Download and Install OCI CLI
+        run: |
+          curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh | sudo bash -s -- --accept-all-defaults --skip-setup
+          echo "export PATH=\$PATH:/home/runner/bin" >> $GITHUB_ENV
+
+      - name: RUN OCI CLI
+        run: |
+          oci iam compartment list --compartment-id-in-subtree=true
+
+      #   - name: Retrieve the OCID of a named compartment in tenancy
+      #     uses: oracle-actions/run-oci-cli-command@v1.3.2
+      #     id: find-compartment-id
+      #     with:
+      #       command: "iam compartment list --compartment-id-in-subtree=true"
 
       - name: Install Kfilt
         run: |
