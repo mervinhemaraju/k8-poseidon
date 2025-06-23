@@ -39,11 +39,6 @@ jobs:
         with:
           version: "v1.28.0"
 
-      - name: Install Kustomize
-        run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-          sudo mv kustomize /usr/local/bin/
-
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
@@ -141,20 +136,44 @@ jobs:
 
       - name: Install External Secrets Operator
         run: |
-
           echo "Creating the es namespace..."
           kubectl create namespace es || echo "Namespace es already exists"
 
           echo "Installing External Secrets..."
           cd apps/
-          kubectl kustomize --enable-helm external-secrets/ > external-secrets-config.yaml
-          kfilt -i kind=CustomResourceDefinition -f external-secrets-config.yaml | kubectl -n es apply -f -
-          kfilt -i kind=CustomResourceDefinition -f external-secrets-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
-          kubectl -n es apply -f external-secrets-config.yaml
 
+          # Generate the full configuration
+          kubectl kustomize --enable-helm external-secrets/ > external-secrets-config.yaml
+
+          # First, apply only the CRDs
+          echo "Applying CRDs..."
+          kfilt -i kind=CustomResourceDefinition -f external-secrets-config.yaml | kubectl apply -f -
+
+          # Wait for ALL CRDs to be established
+          echo "Waiting for CRDs to be established..."
+          kubectl wait --for condition=established --timeout=120s crd/clustersecretstores.external-secrets.io || true
+          kubectl wait --for condition=established --timeout=120s crd/secretstores.external-secrets.io || true
+          kubectl wait --for condition=established --timeout=120s crd/externalsecrets.external-secrets.io || true
+          kubectl wait --for condition=established --timeout=120s crd/clusterexternalsecrets.external-secrets.io || true
+          kubectl wait --for condition=established --timeout=120s crd/pushsecrets.external-secrets.io || true
+
+          # Apply everything EXCEPT the custom resources (css.yaml and ces.yaml content)
+          echo "Applying External Secrets Operator components..."
+          kfilt -x kind=ClusterSecretStore -x kind=ClusterExternalSecret -f external-secrets-config.yaml | kubectl apply -n es -f -
+
+          # Wait for the operator pods to be ready
           echo "Waiting for External Secrets Operator to be ready..."
           kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets --timeout=300s
           kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets-webhook --timeout=300s
           kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets-cert-controller --timeout=300s
+
+          # Give the webhook a moment to be fully ready
+          echo "Waiting for webhook to be fully operational..."
+          sleep 10
+
+          # Now apply the ClusterSecretStore and ClusterExternalSecret
+          echo "Applying ClusterSecretStore and ClusterExternalSecret..."
+          kfilt -i kind=ClusterSecretStore -f external-secrets-config.yaml | kubectl apply -f -
+          kfilt -i kind=ClusterExternalSecret -f external-secrets-config.yaml | kubectl apply -f -
 
           echo "External Secrets installation completed"
