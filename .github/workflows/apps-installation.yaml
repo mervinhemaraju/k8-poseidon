@@ -18,7 +18,7 @@ on:
 env:
   KFILTVERSION: "0.0.8"
   OCI_POSEIDON_REGION: "uk-london-1"
-  OCI_CLUSTER_NAME: "apps"
+  OCI_CLUSTER_NAME: "applications"
 
 jobs:
   deploy:
@@ -45,6 +45,9 @@ jobs:
 
           # Create local variable for private key path
           KEY_PATH=~/.oci/oci_api_key.pem 
+
+          # Append OCI_API_KEY to the key file
+          echo "OCI_API_KEY" >> $KEY_PATH   
 
           # Create the oci_api_key.pem file
           echo "${{ steps.doppler.outputs.OCI_POSEIDON_PRIVATE_KEY }}" > $KEY_PATH
