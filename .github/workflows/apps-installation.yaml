@@ -18,6 +18,7 @@ on:
 env:
   KFILTVERSION: "0.0.8"
   OCI_POSEIDON_REGION: "uk-london-1"
+  OCI_CLUSTER_NAME: "apps"
 
 jobs:
   deploy:
@@ -59,20 +60,51 @@ jobs:
 
       - name: Install OCI CLI
         run: |
+          echo "Downloading and installing OCI CLI..."   
           curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh > install.sh
           chmod +x install.sh
+
+          echo "Installing OCI CLI..."
           ./install.sh --accept-all-defaults
           echo "$HOME/bin" >> $GITHUB_PATH
 
-      - name: RUN OCI CLI
+      - name: Find The OKE Cluster ${{ env.OCI_CLUSTER_NAME }}
+        id: find-cluster-id
         run: |
-          oci iam compartment list --compartment-id-in-subtree=true
+          echo "Searching for OKE cluster named '${{ env.OCI_CLUSTER_NAME }}'..."
 
-      #   - name: Retrieve the OCID of a named compartment in tenancy
-      #     uses: oracle-actions/run-oci-cli-command@v1.3.2
-      #     id: find-compartment-id
-      #     with:
-      #       command: "iam compartment list --compartment-id-in-subtree=true"
+          CLUSTER_ID=$(oci ce cluster list \
+            --compartment-id $COMPARTMENT_ID \
+            --lifecycle-state ACTIVE \
+            --all \
+            --query "data[?name=='${{ env.OCI_CLUSTER_NAME }}'].id | [0]" \
+            --raw-output)
+
+          if [ -z "$CLUSTER_ID" ] || [ "$CLUSTER_ID" == "null" ]; then
+            echo "Error: No OKE cluster named '${{ env.OCI_CLUSTER_NAME }}' found in compartment $COMPARTMENT_ID"
+            exit 1
+          fi
+
+          echo "Found OKE cluster '${{ env.OCI_CLUSTER_NAME }}' with ID: $CLUSTER_ID"
+
+          # Set as step output
+          echo "cluster_id=$CLUSTER_ID" >> $GITHUB_OUTPUT
+
+          # Mask it as well
+          echo "::add-mask::$CLUSTER_ID"
+
+      - name: Generate OKE Kubeconfig
+        run: |
+          echo "Generating kubeconfig for cluster..."
+
+          oci ce cluster create-kubeconfig \
+            --cluster-id ${{ steps.find-cluster-id.outputs.cluster_id }} \
+            --file $HOME/.kube/config \
+            --region ${{ env.OCI_POSEIDON_REGION }} \
+            --token-version 2.0.0 \
+            --kube-endpoint PUBLIC_ENDPOINT
+
+          echo "✓ Kubeconfig generated successfully"
 
       - name: Install Kfilt
         run: |
