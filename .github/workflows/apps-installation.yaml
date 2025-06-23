@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+      - dev
+      - staging
+      - feature/*
+      - fix/*
+      - hotfix/*
+      - release/*
   pull_request:
     branches:
       - main
@@ -16,6 +22,8 @@ on:
 #   OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
 #   OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
 #   OKE_CLUSTER_OCID: ${{ secrets.OKE_CLUSTER_OCID }}
+env:
+  KFILTVERSION: "0.0.8"
 
 jobs:
   deploy:
@@ -25,9 +33,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install OCI CLI
+      - uses: dopplerhq/secrets-fetch-action@v1.3.0
+        id: doppler
+        with:
+          doppler-token: ${{ secrets.DOPPLER_TOKEN }}
+          doppler-project: cloud-iac-main
+          doppler-config: prd
+
+      - name: Install Kfilt
         run: |
-          echo "WORKING!"
+          wget -O /usr/local/bin/kfilt https://github.com/ryane/kfilt/releases/download/v$KFILTVERSION/kfilt_$KFILTVERSION_linux_amd64
+          chmod +x /usr/local/bin/kfilt
+
+      - run: echo "DOPPLER_PROJECT is ${{ steps.doppler.outputs.DOPPLER_PROJECT }} (Doppler meta environment variables are unmasked)"
+      - run: echo "TESTING is ${{ steps.doppler.outputs.OCI_GAIA_FINGERPRINT }} (secret masked output)"
 
     #   - name: Configure OCI CLI
     #     run: |
