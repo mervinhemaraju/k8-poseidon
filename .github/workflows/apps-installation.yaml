@@ -71,20 +71,20 @@ jobs:
           ./install.sh --accept-all-defaults
           echo "$HOME/bin" >> $GITHUB_PATH
 
-      - name: Find The OKE Cluster ${{ env.OCI_CLUSTER_NAME }}
+      - name: Find The OKE Cluster ID
         id: find-cluster-id
         run: |
           echo "Searching for OKE cluster named '${{ env.OCI_CLUSTER_NAME }}'..."
 
           CLUSTER_ID=$(oci ce cluster list \
-            --compartment-id $COMPARTMENT_ID \
+            --compartment-id ${{ steps.doppler.outputs.OCI_POSEIDON_COMPARTMENT_PRODUCTION_ID }} \
             --lifecycle-state ACTIVE \
             --all \
             --query "data[?name=='${{ env.OCI_CLUSTER_NAME }}'].id | [0]" \
             --raw-output)
 
           if [ -z "$CLUSTER_ID" ] || [ "$CLUSTER_ID" == "null" ]; then
-            echo "Error: No OKE cluster named '${{ env.OCI_CLUSTER_NAME }}' found in compartment $COMPARTMENT_ID"
+            echo "Error: No OKE cluster named '${{ env.OCI_CLUSTER_NAME }}' found in compartment ${{ steps.doppler.outputs.OCI_POSEIDON_COMPARTMENT_PRODUCTION_ID }}"
             exit 1
           fi
 
