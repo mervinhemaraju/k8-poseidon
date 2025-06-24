@@ -3,9 +3,16 @@ kind: ConfigMap
 metadata:
   name: argocd-cm
 data:
-  accounts.th3pl4gu3: apiKey, login
+  accounts.mervinhemaraju: apiKey, login
   kustomize.buildOptions: --enable-helm
-  
+  resource.exclusions: |
+      - apiGroups:
+          - "*"
+        kinds:
+          - VolumeSnapshot
+          - Backup
+        clusters:
+          - '*'
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -14,10 +21,10 @@ metadata:
 data:
   policy.default: role:readonly
   policy.csv: |
-    p, th3pl4gu3, applications, get, */*, allow
-    p, th3pl4gu3, applications, override, */*, allow
-    p, th3pl4gu3, applications, sync, */*, allow
-    p, th3pl4gu3, applications, update, */*, allow
-    p, th3pl4gu3, logs, get, */*, allow
-    p, th3pl4gu3, exec, create, */*, allow
-    p, th3pl4gu3, projects, get, *, allow
+    p, mervinhemaraju, applications, get, */*, allow
+    p, mervinhemaraju, applications, override, */*, allow
+    p, mervinhemaraju, applications, sync, */*, allow
+    p, mervinhemaraju, applications, update, */*, allow
+    p, mervinhemaraju, logs, get, */*, allow
+    p, mervinhemaraju, exec, create, */*, allow
+    p, mervinhemaraju, projects, get, *, allow
