@@ -17,8 +17,8 @@ sources:
   - ingress
   - traefik-proxy
 extraArgs:
-#  - --annotation-filter=external-dns.alpha.kubernetes.io/hostname
   - --cloudflare-proxied
+  - --cloudflare-record-comment="provisioned by external-dns"
   - --traefik-disable-legacy
   - --ignore-ingress-rules-spec
   - --ignore-ingress-tls-spec
