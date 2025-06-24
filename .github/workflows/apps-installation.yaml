@@ -164,25 +164,14 @@ jobs:
 
       - name: Install Traefik
         run: |
+          cd apps/
+
           echo "Installing Traefik..."
-          cd apps/traefik/
+          kubectl kustomize --enable-helm traefik/ > traefik-config.yaml
+          kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl -n traefik apply -f -
+          kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
+          kubectl -n traefik apply -f traefik-config.yaml
 
-          # Generate the full Traefik configuration
-          echo "Generating Traefik configuration..."
-          kubectl kustomize . > traefik-config.yaml
-
-          # Apply CRDs first (if any)
-          echo "Installing Traefik CRDs..."
-          kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl apply -f - || echo "No CRDs to install"
-
-          # Wait for CRDs to be established
-          kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl wait --for condition=established --timeout=60s -f - || echo "No CRDs to wait for"
-
-          # Apply everything else except CRDs
-          echo "Installing Traefik resources..."
-          kfilt -x kind=CustomResourceDefinition -x kind=Namespace -f traefik-config.yaml | kubectl apply -f -
-
-          # Wait for Traefik deployment to be ready
           echo "Waiting for Traefik to be ready..."
           kubectl wait --for=condition=ready pod -n traefik -l app.kubernetes.io/name=traefik --timeout=300s
 
@@ -190,25 +179,14 @@ jobs:
 
       - name: Install External DNS
         run: |
+          cd apps/
+
           echo "Installing External DNS..."
-          cd apps/external-dns/
+          kubectl kustomize --enable-helm external-dns/ > external-dns-config.yaml
+          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl -n ed apply -f -
+          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
+          kubectl -n ed apply -f external-dns-config.yaml
 
-          # Generate External DNS configuration
-          echo "Generating External DNS configuration..."
-          kubectl kustomize . > external-dns-config.yaml
-
-          # Apply CRDs first (if any)
-          echo "Installing External DNS CRDs..."
-          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl apply -f - || echo "No CRDs to install"
-
-          # Wait for CRDs to be established
-          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f - || echo "No CRDs to wait for"
-
-          # Apply everything else
-          echo "Installing External DNS resources..."
-          kfilt -x kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl apply -f -
-
-          # Wait for External DNS to be ready
           echo "Waiting for External DNS to be ready..."
           kubectl wait --for=condition=ready pod -n ed -l app.kubernetes.io/name=external-dns --timeout=300s
 
