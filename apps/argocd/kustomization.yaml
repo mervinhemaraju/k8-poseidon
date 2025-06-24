@@ -10,5 +10,5 @@ resources:
   - ingress.yaml
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-patches:
-  - path: ./configmap.yaml
+# patches:
+#   - path: ./configmap.yaml
