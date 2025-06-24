@@ -145,22 +145,26 @@ jobs:
         run: |
 
           echo "Creating secret in Default Namespace"
+
           # Create the secret in default namespace (for cross-namespace access)
           kubectl create secret generic cf-creds \
             --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
-            --namespace=default
+            --namespace=default \
+            --dry-run=client -o yaml | kubectl apply -f -
 
           echo "Creating secret in Traefik Namespace"
           # Create the secret in default namespace (for cross-namespace access)
           kubectl create secret generic cf-creds \
             --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
-            --namespace=traefik
+            --namespace=traefik \
+            --dry-run=client -o yaml | kubectl apply -f -
 
           echo "Creating secret in External-dns Namespace"
           # Create the secret in default namespace (for cross-namespace access)
           kubectl create secret generic cf-creds \
             --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
-            --namespace=ed
+            --namespace=ed \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Install Traefik
         run: |
