@@ -5,7 +5,7 @@ env:
     valueFrom:
       secretKeyRef:
         name: cf-creds
-        key: apiKey
+        key: dnsapitoken
 
 logLevel: info
 policy: sync
