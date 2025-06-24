@@ -7,8 +7,6 @@ namespace: traefik
 
 resources:
   - ./namespace.yaml
-  - ./cf-ipwhitelist.yaml
-  - ./middlewares.yaml
 
 helmCharts:
   - name: traefik
