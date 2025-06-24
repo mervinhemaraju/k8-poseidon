@@ -1,0 +1,34 @@
+apiVersion: external-secrets.io/v1
+kind: ClusterExternalSecret
+metadata:
+  name: test-password
+  namespace: es
+spec:
+  # Create the ExternalSecret in the default namespace for testing
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: "default"
+  
+  # Refresh every 5 minutes for testing
+  refreshTime: 60m
+  
+  # The ExternalSecret template
+  externalSecretSpec:
+    secretStoreRef:
+      name: oci-vault-store
+      kind: ClusterSecretStore
+    
+    # Target Secret that will be created
+    target:
+      name: test-secret
+      creationPolicy: Owner
+
+    dataFrom:
+      - extract:
+          key: "test-password"
+        
+    # # Single password from OCI Vault
+    # data:
+    #   - secretKey: password
+    #     remoteRef:
+    #       key: "test-password"  # The secret name in OCI Vault

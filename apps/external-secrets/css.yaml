@@ -1,4 +1,4 @@
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: ClusterSecretStore
 metadata:
   name: oci-vault-store
@@ -6,26 +6,7 @@ metadata:
 spec:
   provider:
     oracle:
-      # OCI Vault OCID 
-      vault: "ocid1.vault.oc1.uk-london-1.erufseciaagj6.abwgiljtptfsxtdbvenga4bvlxeu6wrm7r4vokaxi6q5dlkfv32nkcb6m7ha"
-      # OCI Region where vault is located
       region: "uk-london-1"
-      auth:
-        # Using Instance Principal authentication (recommended for OKE)
-        # This requires proper IAM policies for the nodes
-        instancePrincipal:
-          # The compartment OCID where the instance principal is authorized
-          compartmentOCID: "ocid1.compartment.oc1..aaaaaaaa64hzfgr34jjnuvozvfjr6ks7jjweunjdn3bv2abbsmtqun6uw2iq"
-        
-        # Alternative: Use User Principal with API key
-        # user:
-        #   # User OCID
-        #   userOCID: "ocid1.user.oc1..aaaaaaaa..."
-        #   # Tenancy OCID
-        #   tenancyOCID: "ocid1.tenancy.oc1..aaaaaaaa..."
-        #   # Fingerprint of the API key
-        #   fingerprint: "aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99"
-        #   # Private key from Kubernetes secret
-        #   privateKey:
-        #     name: oci-credentials
-        #     key: privatekey
+      vault: "ocid1.vault.oc1.uk-london-1.erufseciaagj6.abwgiljtptfsxtdbvenga4bvlxeu6wrm7r4vokaxi6q5dlkfv32nkcb6m7ha"
+      compartment: "ocid1.compartment.oc1..aaaaaaaa64hzfgr34jjnuvozvfjr6ks7jjweunjdn3bv2abbsmtqun6uw2iq"
+      principalType: InstancePrincipal

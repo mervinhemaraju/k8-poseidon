@@ -134,46 +134,82 @@ jobs:
         run: |
           kubectl cluster-info
 
-      - name: Install External Secrets Operator
+      - name: Create Pre-requisites Namespaces
         run: |
-          echo "Creating the es namespace..."
-          kubectl create namespace es || echo "Namespace es already exists"
 
-          echo "Installing External Secrets..."
-          cd apps/
+          # Create namespace for external-dns and traefik if it doesn't exist
+          kubectl create namespace ed || echo "Namespace ed already exists"
+          kubectl create namespace traefik || echo "Namespace traefik already exists"
 
-          # Generate the full configuration
-          kubectl kustomize --enable-helm external-secrets/ > external-secrets-config.yaml
+      - name: Create Cloudflare Credentials Secret
+        run: |
 
-          # First, apply only the CRDs
-          echo "Applying CRDs..."
-          kfilt -i kind=CustomResourceDefinition -f external-secrets-config.yaml | kubectl apply -f -
+          echo "Creating secret in Default Namespace"
+          # Create the secret in default namespace (for cross-namespace access)
+          kubectl create secret generic cf-creds \
+            --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
+            --namespace=default
 
-          # Wait for ALL CRDs to be established
-          echo "Waiting for CRDs to be established..."
-          kubectl wait --for condition=established --timeout=120s crd/clustersecretstores.external-secrets.io || true
-          kubectl wait --for condition=established --timeout=120s crd/secretstores.external-secrets.io || true
-          kubectl wait --for condition=established --timeout=120s crd/externalsecrets.external-secrets.io || true
-          kubectl wait --for condition=established --timeout=120s crd/clusterexternalsecrets.external-secrets.io || true
-          kubectl wait --for condition=established --timeout=120s crd/pushsecrets.external-secrets.io || true
+          echo "Creating secret in Traefik Namespace"
+          # Create the secret in default namespace (for cross-namespace access)
+          kubectl create secret generic cf-creds \
+            --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
+            --namespace=traefik
 
-          # Apply everything EXCEPT the custom resources (css.yaml and ces.yaml content)
-          echo "Applying External Secrets Operator components..."
-          kfilt -x kind=ClusterSecretStore -x kind=ClusterExternalSecret -f external-secrets-config.yaml | kubectl apply -n es -f -
+          echo "Creating secret in External-dns Namespace"
+          # Create the secret in default namespace (for cross-namespace access)
+          kubectl create secret generic cf-creds \
+            --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
+            --namespace=ed
 
-          # Wait for the operator pods to be ready
-          echo "Waiting for External Secrets Operator to be ready..."
-          kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets --timeout=300s
-          kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets-webhook --timeout=300s
-          kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=external-secrets-cert-controller --timeout=300s
+      - name: Install Traefik
+        run: |
+          echo "Installing Traefik..."
+          cd apps/traefik/
 
-          # Give the webhook a moment to be fully ready
-          echo "Waiting for webhook to be fully operational..."
-          sleep 10
+          # Generate the full Traefik configuration
+          echo "Generating Traefik configuration..."
+          kubectl kustomize . > traefik-config.yaml
 
-          # Now apply the ClusterSecretStore and ClusterExternalSecret
-          echo "Applying ClusterSecretStore and ClusterExternalSecret..."
-          kfilt -i kind=ClusterSecretStore -f external-secrets-config.yaml | kubectl apply -f -
-          kfilt -i kind=ClusterExternalSecret -f external-secrets-config.yaml | kubectl apply -f -
+          # Apply CRDs first (if any)
+          echo "Installing Traefik CRDs..."
+          kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl apply -f - || echo "No CRDs to install"
 
-          echo "External Secrets installation completed"
+          # Wait for CRDs to be established
+          kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl wait --for condition=established --timeout=60s -f - || echo "No CRDs to wait for"
+
+          # Apply everything else except CRDs
+          echo "Installing Traefik resources..."
+          kfilt -x kind=CustomResourceDefinition -x kind=Namespace -f traefik-config.yaml | kubectl apply -f -
+
+          # Wait for Traefik deployment to be ready
+          echo "Waiting for Traefik to be ready..."
+          kubectl wait --for=condition=ready pod -n traefik -l app.kubernetes.io/name=traefik --timeout=300s
+
+          echo "Traefik installation completed"
+
+      - name: Install External DNS
+        run: |
+          echo "Installing External DNS..."
+          cd apps/external-dns/
+
+          # Generate External DNS configuration
+          echo "Generating External DNS configuration..."
+          kubectl kustomize . > external-dns-config.yaml
+
+          # Apply CRDs first (if any)
+          echo "Installing External DNS CRDs..."
+          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl apply -f - || echo "No CRDs to install"
+
+          # Wait for CRDs to be established
+          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f - || echo "No CRDs to wait for"
+
+          # Apply everything else
+          echo "Installing External DNS resources..."
+          kfilt -x kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl apply -f -
+
+          # Wait for External DNS to be ready
+          echo "Waiting for External DNS to be ready..."
+          kubectl wait --for=condition=ready pod -n ed -l app.kubernetes.io/name=external-dns --timeout=300s
+
+          echo "External DNS installation completed"

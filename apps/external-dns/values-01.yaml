@@ -1,0 +1,33 @@
+provider:
+  name: cloudflare
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cf-creds
+        key: apiKey
+
+logLevel: info
+policy: sync
+registry: txt
+txtOwnerId: external-dns-mervinhemaraju-com
+
+sources:
+  - service  
+  - ingress
+  - traefik-proxy
+extraArgs:
+#  - --annotation-filter=external-dns.alpha.kubernetes.io/hostname
+  - --cloudflare-proxied
+  - --traefik-disable-legacy
+  - --ignore-ingress-rules-spec
+  - --ignore-ingress-tls-spec
+
+domainFilters:
+  - mervinhemaraju.com
+
+triggerLoopOnEvent: true
+interval: 1m
+
+serviceMonitor:
+  enabled: false
