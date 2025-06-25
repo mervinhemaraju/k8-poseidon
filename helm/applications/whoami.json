@@ -1,0 +1,32 @@
+{
+    "apiVersion": "argoproj.io/v1alpha1",
+    "kind": "Application",
+    "metadata": {
+        "name": "whoami",
+        "namespace": "argocd",
+        "finalizers": [
+            "resources-finalizer.argocd.argoproj.io"
+        ]
+    },
+    "spec": {
+        "project": "default",
+        "syncPolicy": {
+            "automated": {
+                "prune": true,
+                "selfHeal": true
+            },
+            "syncOptions": [
+                "CreateNamespace=true"
+            ]
+        },
+        "source": {
+            "path": "helm/src/whoami",
+            "repoURL": "https://github.com/mervinhemaraju/k8-poseidon.git",
+            "targetRevision": "main"
+        },
+        "destination": {
+            "server": "https://kubernetes.default.svc",
+            "namespace": "whoami"
+        }
+    }
+}

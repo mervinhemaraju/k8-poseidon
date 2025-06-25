@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: whoami
+
+namespace: whoami
+
+resources:
+  - ./namespace.yaml
+  - ./ingress.yaml
+
+helmCharts:
+  - name: whoami
+    repo: https://cowboysysop.github.io/charts/
+    releaseName: whoami
+    version: 2.0.0
+    namespace: whoami
+    includeCRDs: true
+    additionalValuesFiles:
+      - values.yaml

@@ -9,7 +9,7 @@ spec:
       repoURL: https://github.com/mervinhemaraju/k8-poseidon
       revision: HEAD
       directories:
-      - path: charts/*
+      - path: helm/src/*
   template:
     metadata:
       name: '{{path.basename}}'

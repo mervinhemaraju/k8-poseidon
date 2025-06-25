@@ -1,0 +1,44 @@
+# Whoami application values
+replicaCount: 2
+
+image:
+  repository: traefik/whoami
+  pullPolicy: IfNotPresent
+  tag: "v1.10.1"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+podSecurityContext:
+  fsGroup: 65534
+  runAsGroup: 65534
+  runAsNonRoot: true
+  runAsUser: 65534
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65534
