@@ -6,6 +6,7 @@ metadata:
 namespace: argocd
 
 resources:
+  - namespace.yaml
   - ingress.yaml
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
