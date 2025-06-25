@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: default-apps
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/mervinhemaraju/k8-poseidon
+      revision: HEAD
+      directories:
+      - path: charts/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+      labels:
+        app.kubernetes.io/managed-by: default-apps
+    spec:
+      project: default-apps  # References the AppProject above
+      source:
+        repoURL: https://github.com/mervinhemaraju/k8-poseidon
+        targetRevision: HEAD
+        path: '{{path}}'
+        helm:
+          valueFiles:
+          - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
