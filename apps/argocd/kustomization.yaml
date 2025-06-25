@@ -10,4 +10,5 @@ resources:
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 patches:
-  - path: configmap.yaml
+  - path: cm.yaml
+  - path: rbac-cm.yaml
