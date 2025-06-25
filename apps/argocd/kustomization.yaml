@@ -12,3 +12,9 @@ resources:
 patches:
   - path: cm.yaml
   - path: rbac-cm.yaml
+
+configMapGenerator:
+  - name: argocd-cmd-params-cm
+    behavior: merge
+    literals:
+      - server.insecure="true"
