@@ -7,7 +7,6 @@ namespace: traefik
 
 resources:
   - ./namespace.yaml
-  - ./dashboard-ingressroute.yaml
 
 helmCharts:
   - name: traefik
