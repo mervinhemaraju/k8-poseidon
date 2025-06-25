@@ -1,0 +1,166 @@
+# Simple Traefik Configuration for Oracle Cloud Infrastructure
+deployment:
+  enabled: true
+  replicas: 1
+
+# Service configuration for Oracle Cloud Load Balancer
+service:
+  enabled: true
+  type: LoadBalancer
+  annotations:
+    # Oracle Cloud Infrastructure Load Balancer annotations
+    service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "10"
+    # external-dns annotations
+    external-dns.alpha.kubernetes.io/hostname: traefik.mervinhemaraju.com
+  spec:
+    # This will be assigned by Oracle Cloud
+    externalTrafficPolicy: Local
+
+# Ports configuration
+ports:
+  web:
+    port: 8000
+    expose: true
+    exposedPort: 80
+    protocol: TCP
+  websecure:
+    port: 8443
+    expose: true
+    exposedPort: 443
+    protocol: TCP
+    tls:
+      enabled: true
+  traefik:
+    port: 9000
+    expose: true
+    exposedPort: 9000
+    protocol: TCP
+
+# Ingress for Traefik dashboard - external-dns will handle DNS
+ingressRoute:
+  dashboard:
+    enabled: true
+    # annotations: {}
+    # labels: {}
+    # matchRule: Host(`traefik.mervinhemaraju.com`)
+    # entryPoints: ["websecure"]
+    # middlewares: []
+    # tls:
+    #   secretName: traefik-dashboard-tls
+
+# Persistent Volume for ACME certificates
+persistence:
+  enabled: true
+  name: data
+  accessMode: ReadWriteOnce
+  size: 50Gi
+  storageClass: "oci-bv"
+  path: /data
+  annotations: {}
+
+# Let's Encrypt configuration
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      tlsChallenge: false
+      httpChallenge: false
+      dnsChallenge:
+      # also add the provider's required configuration under env
+      # or expand then from secrets/configmaps with envfrom
+      # cf. https://doc.traefik.io/traefik/https/acme/#providers
+        provider: cloudflare
+      # add futher options for the dns challenge as needed
+      # cf. https://doc.traefik.io/traefik/https/acme/#dnschallenge
+        resolvers:
+          - 1.1.1.1
+          - 8.8.8.8
+        delayBeforeCheck: 60
+      email: mervinhemaraju16@gmail.com
+      storage: /data/acme.json
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      # Use staging for testing: https://acme-staging-v02.api.letsencrypt.org/directory
+
+# Environment variables for Cloudflare
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cf-creds
+        key: dnsapitoken
+
+# Global redirect to HTTPS
+entryPoints:
+  web:
+    address: ":8000"
+    http:
+      redirections:
+        entrypoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":8443"
+
+# Enable dashboard
+api:
+  dashboard: true
+  insecure: false
+
+# Pilot disabled
+pilot:
+  enabled: false
+
+# Metrics disabled
+metrics: {}
+
+# Log level
+log:
+  level: INFO
+
+# Access logs
+accessLog:
+  enabled: true
+
+# Global configuration
+globalArguments:
+  - "--global.checknewversion=false"
+  - "--global.sendanonymoususage=false"
+
+# Additional arguments
+additionalArguments:
+  # - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+  # - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+  # - "--certificatesresolvers.letsencrypt.acme.email=mervinhemaraju16@gmail.com"
+  # - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+  # - "--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+  - --certificatesresolvers.le.acme.keyType=RSA2048
+  - --serversTransport.insecureSkipVerify=true
+
+# Providers
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+  kubernetesIngress:
+    enabled: true
+    allowExternalNameServices: true
+    publishedService:
+      enabled: true
+
+# RBAC disabled for simple deployment
+rbac:
+  enabled: false
+
+# Security context
+securityContext:
+  capabilities:
+    drop: [ALL]
+  readOnlyRootFilesystem: true
+  runAsGroup: 65532
+  runAsNonRoot: true
+  runAsUser: 65532
+
+podSecurityContext:
+  fsGroup: 65532

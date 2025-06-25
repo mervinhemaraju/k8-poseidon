@@ -7,6 +7,7 @@ namespace: traefik
 
 resources:
   - ./namespace.yaml
+  - ./dashboard-ingressroute.yaml
 
 helmCharts:
   - name: traefik
@@ -16,4 +17,4 @@ helmCharts:
     namespace: traefik
     includeCRDs: true
     additionalValuesFiles:
-      - values-01.yaml
+      - values.yaml

@@ -16,4 +16,4 @@ helmCharts:
     namespace: ed
     includeCRDs: true
     additionalValuesFiles:
-      - values-01.yaml
+      - values.yaml
