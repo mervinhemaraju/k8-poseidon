@@ -9,6 +9,9 @@ additionalArguments:
   #- --certificatesresolvers.le.acme.tlschallenge.entrypoint=web
   - --certificatesresolvers.le.acme.keyType=RSA2048
   - --serversTransport.insecureSkipVerify=true
+  # Add external-dns integration
+  - --providers.kubernetescrd.allowexternalnameservices=true
+  - --providers.kubernetescrd.allowcrossnamespace=true
 
 env:
   - name: CF_DNS_API_TOKEN
@@ -42,6 +45,7 @@ service:
     service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
     service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
     service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "10"
+    external-dns.alpha.kubernetes.io/hostname: "traefik.mervinhemaraju.com"
 
 persistence:
   enabled: true
