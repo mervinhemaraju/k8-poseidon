@@ -5,6 +5,8 @@ metadata:
 data:
   accounts.th3pl4gu3: apiKey, login
   kustomize.buildOptions: --enable-helm
+  url: https://argo.mervinhemaraju.com
+  server.insecure: "true"
   resource.exclusions: |
       - apiGroups:
           - "*"
@@ -13,4 +15,3 @@ data:
           - Backup
         clusters:
           - '*'
-
