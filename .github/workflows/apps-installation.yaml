@@ -202,7 +202,7 @@ jobs:
 
           echo "Installing ArgoCD..."
           kubectl kustomize --enable-helm argocd/ > argocd-config.yaml
-          kfilt -i kind=CustomResourceDefinition -f argocd-config.yaml | kubectl -n argocd apply -f -
+          kubectl -n argocd apply -f argocd-config.yaml
 
           echo "Waiting for ArgoCD to be ready..."
           kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-server --timeout=300s
