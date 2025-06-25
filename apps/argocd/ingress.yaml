@@ -4,21 +4,19 @@ metadata:
   name: argocd-server
   namespace: argocd
   annotations:
-    external-dns.alpha.kubernetes.io/target: traefik.mervinhemaraju.com
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
-    external-dns.alpha.kubernetes.io/cloudflare-record-comment: "Managed by ExternalDNS"
+    external-dns.alpha.kubernetes.io/hostname: argo.mervinhemaraju.com
 spec:
   entryPoints:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`argocd.mervinhemaraju.com`)
+      match: Host(`argo.mervinhemaraju.com`)
       priority: 10
       services:
         - name: argocd-server
           port: 443
     - kind: Rule
-      match: Host(`argocd.mervinhemaraju.com`) && Header(`Content-Type`, `application/grpc`)
+      match: Host(`argo.mervinhemaraju.com`) && Header(`Content-Type`, `application/grpc`)
       priority: 11
       services:
         - name: argocd-server
@@ -26,3 +24,18 @@ spec:
           scheme: h2c
   tls:
     certResolver: le
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: argocd-headers
+  namespace: argocd
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: https
+      X-Forwarded-For: ""
+    customResponseHeaders:
+      X-Frame-Options: SAMEORIGIN
+      X-Content-Type-Options: nosniff
