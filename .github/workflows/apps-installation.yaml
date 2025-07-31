@@ -135,11 +135,11 @@ jobs:
         run: |
           kubectl cluster-info
 
-      - name: Apply the base confgi requirements
+      - name: Apply the base config requirements
         run: |
 
           # Apply the base configs
-          k apply -f apps/base
+          kubectl apply -f apps/base
 
       - name: Install Metrics Server API
         run: |
