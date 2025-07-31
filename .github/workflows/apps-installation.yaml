@@ -45,12 +45,20 @@ jobs:
         with:
           version: "v3.12.0"
 
-      - name: "Authenticate to Doppler Secrets"
+      - name: "Authenticate to Doppler OCI Repo"
         uses: dopplerhq/secrets-fetch-action@v1.3.0
-        id: doppler
+        id: doppler_oci
         with:
           doppler-token: ${{ secrets.DOPPLER_TOKEN }}
-          doppler-project: cloud-iac-main
+          doppler-project: cloud-oci-creds
+          doppler-config: prd
+
+      - name: "Authenticate to Doppler Apps Repo"
+        uses: dopplerhq/secrets-fetch-action@v1.3.0
+        id: doppler_apps
+        with:
+          doppler-token: ${{ secrets.DOPPLER_TOKEN }}
+          doppler-project: apps-creds
           doppler-config: prd
 
       - name: "Setup OCI Config File"
@@ -67,15 +75,15 @@ jobs:
 
 
           # Create the oci_api_key.pem file
-          echo "${{ steps.doppler.outputs.OCI_POSEIDON_PRIVATE_KEY }}" > $KEY_PATH
+          echo "${{ steps.doppler_oci.outputs.OCI_POSEIDON_PRIVATE_KEY }}" > $KEY_PATH
           chmod 600 ~/.oci/oci_api_key.pem
 
           # Create the config file
           echo "[DEFAULT]" > ~/.oci/config
-          echo "user=${{ steps.doppler.outputs.OCI_POSEIDON_USER_OCID }}" >> ~/.oci/config
-          echo "fingerprint=${{ steps.doppler.outputs.OCI_POSEIDON_FINGERPRINT }}" >> ~/.oci/config
+          echo "user=${{ steps.doppler_oci.outputs.OCI_POSEIDON_USER_OCID }}" >> ~/.oci/config
+          echo "fingerprint=${{ steps.doppler_oci.outputs.OCI_POSEIDON_FINGERPRINT }}" >> ~/.oci/config
           echo "key_file=$KEY_PATH" >> ~/.oci/config
-          echo "tenancy=${{ steps.doppler.outputs.OCI_POSEIDON_TENANCY_OCID }}" >> ~/.oci/config
+          echo "tenancy=${{ steps.doppler_oci.outputs.OCI_POSEIDON_TENANCY_OCID }}" >> ~/.oci/config
           echo "region=${{ env.OCI_POSEIDON_REGION }}" >> ~/.oci/config
 
       - name: Install OCI CLI
@@ -94,14 +102,14 @@ jobs:
           echo "Searching for OKE cluster named '${{ env.OCI_CLUSTER_NAME }}'..."
 
           CLUSTER_ID=$(oci ce cluster list \
-            --compartment-id ${{ steps.doppler.outputs.OCI_POSEIDON_COMPARTMENT_PRODUCTION_ID }} \
+            --compartment-id ${{ steps.doppler_oci.outputs.OCI_POSEIDON_COMPARTMENT_PRODUCTION_ID }} \
             --lifecycle-state ACTIVE \
             --all \
             --query "data[?name=='${{ env.OCI_CLUSTER_NAME }}'].id | [0]" \
             --raw-output)
 
           if [ -z "$CLUSTER_ID" ] || [ "$CLUSTER_ID" == "null" ]; then
-            echo "Error: No OKE cluster named '${{ env.OCI_CLUSTER_NAME }}' found in compartment ${{ steps.doppler.outputs.OCI_POSEIDON_COMPARTMENT_PRODUCTION_ID }}"
+            echo "Error: No OKE cluster named '${{ env.OCI_CLUSTER_NAME }}' found in compartment ${{ steps.doppler_oci.outputs.OCI_POSEIDON_COMPARTMENT_PRODUCTION_ID }}"
             exit 1
           fi
 
@@ -152,21 +160,21 @@ jobs:
 
           # Create the secret in default namespace (for cross-namespace access)
           kubectl create secret generic cf-creds \
-            --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
+            --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
             --namespace=default \
             --dry-run=client -o yaml | kubectl apply -f -
 
           echo "Creating secret in Traefik Namespace"
           # Create the secret in default namespace (for cross-namespace access)
           kubectl create secret generic cf-creds \
-            --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
+            --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
             --namespace=traefik \
             --dry-run=client -o yaml | kubectl apply -f -
 
           echo "Creating secret in External-dns Namespace"
           # Create the secret in default namespace (for cross-namespace access)
           kubectl create secret generic cf-creds \
-            --from-literal=dnsapitoken="${{ steps.doppler.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
+            --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
             --namespace=ed \
             --dry-run=client -o yaml | kubectl apply -f -
 
@@ -185,34 +193,34 @@ jobs:
 
           echo "Traefik installation completed"
 
-      # - name: Install External DNS
-      #   run: |
-      #     cd apps/
+      - name: Install External DNS
+        run: |
+          cd apps/
 
-      #     echo "Installing External DNS..."
-      #     kubectl kustomize --enable-helm external-dns/ > external-dns-config.yaml
-      #     kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl -n ed apply -f -
-      #     kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
-      #     kubectl -n ed apply -f external-dns-config.yaml
+          echo "Installing External DNS..."
+          kubectl kustomize --enable-helm external-dns/ > external-dns-config.yaml
+          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl -n ed apply -f -
+          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
+          kubectl -n ed apply -f external-dns-config.yaml
 
-      #     echo "Waiting for External DNS to be ready..."
-      #     kubectl wait --for=condition=ready pod -n ed -l app.kubernetes.io/name=external-dns --timeout=300s
+          echo "Waiting for External DNS to be ready..."
+          kubectl wait --for=condition=ready pod -n ed -l app.kubernetes.io/name=external-dns --timeout=300s
 
-      #     echo "External DNS installation completed"
+          echo "External DNS installation completed"
 
-      # - name: Install ArgoCD
-      #   run: |
-      #     cd apps/
+      - name: Install ArgoCD
+        run: |
+          cd apps/
 
-      #     echo "Installing ArgoCD..."
-      #     kubectl kustomize --enable-helm argocd/ > argocd-config.yaml
-      #     kubectl -n argocd apply -f argocd-config.yaml
+          echo "Installing ArgoCD..."
+          kubectl kustomize --enable-helm argocd/ > argocd-config.yaml
+          kubectl -n argocd apply -f argocd-config.yaml
 
-      #     echo "Waiting for ArgoCD to be ready..."
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-server --timeout=300s
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-repo-server --timeout=300s
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-redis --timeout=300s
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-dex-server --timeout=300s
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-applicationset-controller --timeout=300s
+          echo "Waiting for ArgoCD to be ready..."
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-server --timeout=300s
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-repo-server --timeout=300s
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-redis --timeout=300s
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-dex-server --timeout=300s
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-applicationset-controller --timeout=300s
 
-      #     echo "ArgoCD installation completed"
+          echo "ArgoCD installation completed"
