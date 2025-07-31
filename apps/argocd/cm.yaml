@@ -5,7 +5,7 @@ metadata:
 data:
   accounts.th3pl4gu3: apiKey, login
   kustomize.buildOptions: --enable-helm
-  url: "https://argocd.mervinhemaraju.com"
+  url: "https://argocd.plagueworks.org"
   server.disable.auth: "false"
   resource.exclusions: |
       - apiGroups:

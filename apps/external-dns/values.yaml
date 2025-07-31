@@ -11,7 +11,7 @@ env:
 logLevel: info
 policy: sync
 registry: txt
-txtOwnerId: external-dns-mervinhemaraju-com
+txtOwnerId: external-dns-plagueworks-org
 
 sources:
   - service  
@@ -24,7 +24,7 @@ extraArgs:
   - --ignore-ingress-tls-spec
 
 domainFilters:
-  - mervinhemaraju.com
+  - plagueworks.org
 
 triggerLoopOnEvent: true
 interval: 1m

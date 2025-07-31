@@ -6,7 +6,6 @@ metadata:
 namespace: argocd
 
 resources:
-  - namespace.yaml
   - ingress.yaml
   - project.yaml
   - applicationset.yaml

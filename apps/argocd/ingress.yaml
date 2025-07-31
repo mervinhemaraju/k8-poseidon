@@ -4,19 +4,19 @@ metadata:
   name: argocd-server
   namespace: argocd
   annotations:
-    external-dns.alpha.kubernetes.io/target: traefik.mervinhemaraju.com
+    external-dns.alpha.kubernetes.io/target: traefik.plagueworks.org
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
 spec:
   entryPoints:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`argocd.mervinhemaraju.com`)
+      match: Host(`argocd.plagueworks.org`)
       services:
         - name: argocd-server
           port: 80 
     - kind: Rule
-      match: Host(`argocd.mervinhemaraju.com`) && Header(`Content-Type`, `application/grpc`)
+      match: Host(`argocd.plagueworks.org`) && Header(`Content-Type`, `application/grpc`)
       priority: 11
       services:
         - name: argocd-server

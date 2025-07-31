@@ -19,6 +19,7 @@ env:
   KFILTVERSION: "0.0.8"
   OCI_POSEIDON_REGION: "uk-london-1"
   OCI_CLUSTER_NAME: "applications"
+  METRICS_SERVER_VERSION: "v0.7.2"
 
 jobs:
   deploy:
@@ -134,12 +135,15 @@ jobs:
         run: |
           kubectl cluster-info
 
-      - name: Create Pre-requisites Namespaces
+      - name: Apply the base confgi requirements
         run: |
 
-          # Create namespace for external-dns and traefik if it doesn't exist
-          kubectl create namespace ed || echo "Namespace ed already exists"
-          kubectl create namespace traefik || echo "Namespace traefik already exists"
+          # Apply the base configs
+          k apply -f apps/base
+
+      - name: Install Metrics Server API
+        run: |
+          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/${{ env.METRICS_SERVER_VERSION }}/components.yaml
 
       - name: Create Cloudflare Credentials Secret
         run: |
@@ -181,34 +185,34 @@ jobs:
 
           echo "Traefik installation completed"
 
-      - name: Install External DNS
-        run: |
-          cd apps/
+      # - name: Install External DNS
+      #   run: |
+      #     cd apps/
 
-          echo "Installing External DNS..."
-          kubectl kustomize --enable-helm external-dns/ > external-dns-config.yaml
-          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl -n ed apply -f -
-          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
-          kubectl -n ed apply -f external-dns-config.yaml
+      #     echo "Installing External DNS..."
+      #     kubectl kustomize --enable-helm external-dns/ > external-dns-config.yaml
+      #     kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl -n ed apply -f -
+      #     kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
+      #     kubectl -n ed apply -f external-dns-config.yaml
 
-          echo "Waiting for External DNS to be ready..."
-          kubectl wait --for=condition=ready pod -n ed -l app.kubernetes.io/name=external-dns --timeout=300s
+      #     echo "Waiting for External DNS to be ready..."
+      #     kubectl wait --for=condition=ready pod -n ed -l app.kubernetes.io/name=external-dns --timeout=300s
 
-          echo "External DNS installation completed"
+      #     echo "External DNS installation completed"
 
-      - name: Install ArgoCD
-        run: |
-          cd apps/
+      # - name: Install ArgoCD
+      #   run: |
+      #     cd apps/
 
-          echo "Installing ArgoCD..."
-          kubectl kustomize --enable-helm argocd/ > argocd-config.yaml
-          kubectl -n argocd apply -f argocd-config.yaml
+      #     echo "Installing ArgoCD..."
+      #     kubectl kustomize --enable-helm argocd/ > argocd-config.yaml
+      #     kubectl -n argocd apply -f argocd-config.yaml
 
-          echo "Waiting for ArgoCD to be ready..."
-          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-server --timeout=300s
-          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-repo-server --timeout=300s
-          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-redis --timeout=300s
-          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-dex-server --timeout=300s
-          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-applicationset-controller --timeout=300s
+      #     echo "Waiting for ArgoCD to be ready..."
+      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-server --timeout=300s
+      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-repo-server --timeout=300s
+      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-redis --timeout=300s
+      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-dex-server --timeout=300s
+      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-applicationset-controller --timeout=300s
 
-          echo "ArgoCD installation completed"
+      #     echo "ArgoCD installation completed"
