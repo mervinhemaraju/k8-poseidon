@@ -43,6 +43,7 @@ service:
     service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "10"
     external-dns.alpha.kubernetes.io/hostname: "traefik.plagueworks.org"
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+    external-dns.alpha.kubernetes.io/cloudflare-comment: "This is managed by ExternalDns in oke-poseidon-apps"
 
 persistence:
   enabled: true

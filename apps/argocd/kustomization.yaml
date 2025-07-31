@@ -8,7 +8,7 @@ namespace: argocd
 resources:
   - ingress.yaml
   - project.yaml
-  - applicationset.yaml
+  - default-application.yaml
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 patches:
