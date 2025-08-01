@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+data:
+  policy.default: role:readonly
+  policy.csv: |
+    p, th3pl4gu3, applications, get, */*, allow
+    p, th3pl4gu3, applications, override, */*, allow
+    p, th3pl4gu3, applications, sync, */*, allow
+    p, th3pl4gu3, applications, update, */*, allow
+    p, th3pl4gu3, logs, get, */*, allow
+    p, th3pl4gu3, exec, create, */*, allow
+    p, th3pl4gu3, projects, get, *, allow

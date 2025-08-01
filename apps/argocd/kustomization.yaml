@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: argocd
+
+namespace: argocd
+
+resources:
+  - ingress.yaml
+  - project.yaml
+  - default-application.yaml
+  - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+patches:
+  - path: cm.yaml
+  - path: rbac-cm.yaml
+
+configMapGenerator:
+  - name: argocd-cmd-params-cm
+    behavior: merge
+    literals:
+      - server.insecure="true"

@@ -1,0 +1,18 @@
+# List of all required namespaces for the applications
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ed
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: traefik
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
