@@ -1,0 +1,61 @@
+# Uptime Kuma configuration
+image:
+  repository: louislam/uptime-kuma
+  tag: "1.23.15"
+  pullPolicy: IfNotPresent
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 3001
+  targetPort: 3001
+
+# Resources
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+# Persistence - disabled since we're using external MariaDB
+persistence:
+  enabled: false
+
+# Environment variables for MariaDB connection
+env:
+  - name: UPTIME_KUMA_DB_TYPE
+    value: "mariadb"
+  - name: UPTIME_KUMA_DB_HOSTNAME
+    value: "gaia-db.local"
+  - name: UPTIME_KUMA_DB_PORT
+    value: "3306"
+  - name: UPTIME_KUMA_DB_NAME
+    value: "uptimekuma"
+  - name: UPTIME_KUMA_DB_USERNAME
+    value: "th3pl4gu3"
+  - name: UPTIME_KUMA_DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: uptime-kuma-db-secret
+        key: password
+
+# Node selector (optional - for ARM nodes if needed)
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Replica count
+replicaCount: 1
+
+# Update strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1

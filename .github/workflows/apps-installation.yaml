@@ -178,6 +178,17 @@ jobs:
             --namespace=ed \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Create Required Credentials Secret
+        run: |
+
+          echo "Creating requried secrets..."
+
+          # Create uptimekuma secrets
+          kubectl create secret generic uptime-kuma-db-secret \
+            --from-literal=password="${{ steps.doppler_apps.outputs.UPTIMEKUMA_ADMIN_PASSWORD }}" \
+            --namespace=uptimekuma \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Install Traefik
         run: |
           cd apps/
