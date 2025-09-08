@@ -81,7 +81,7 @@ jobs:
           # Create the config file
           echo "[DEFAULT]" > ~/.oci/config
           echo "user=${{ steps.doppler_oci.outputs.OCI_POSEIDON_USER_OCID }}" >> ~/.oci/config
-          echo "fingerprint=${{ steps.doppler_oci.outputs.OCI_POSEIDON_FINGERPRINT }}" >> ~/.oci/config
+          echo "fingerprint=${{ steps.doppler_oci.outputs.OCI_API_FINGERPRINT }}" >> ~/.oci/config
           echo "key_file=$KEY_PATH" >> ~/.oci/config
           echo "tenancy=${{ steps.doppler_oci.outputs.OCI_POSEIDON_TENANCY_OCID }}" >> ~/.oci/config
           echo "region=${{ env.OCI_POSEIDON_REGION }}" >> ~/.oci/config
