@@ -13,8 +13,17 @@ helmCharts:
   - name: uptime-kuma
     repo: https://dirsigler.github.io/uptime-kuma-helm
     releaseName: uptime-kuma
-    version: 2.21.0
+    version: 2.22.0
     namespace: uptimekuma
     includeCRDs: true
     additionalValuesFiles:
       - values.yaml
+    valuesInline:
+      persistence:
+        enabled: false
+      volumes:
+        - name: storage
+          emptyDir: {}
+      volumeMounts:
+        - name: storage
+          mountPath: /app/data

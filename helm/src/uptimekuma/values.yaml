@@ -1,8 +1,8 @@
 # Uptime Kuma configuration
-image:
-  repository: louislam/uptime-kuma
-  tag: "1.23.15"
-  pullPolicy: IfNotPresent
+# image:
+#   repository: louislam/uptime-kuma
+#   tag: "1.23.15"
+#   pullPolicy: IfNotPresent
 
 # Service configuration
 service:
@@ -19,12 +19,18 @@ resources:
     cpu: "500m"
     memory: "512Mi"
 
-# Persistence - disabled since we're using external MariaDB
+# Storage Persistency - disabled since we're using external MariaDB
 persistence:
   enabled: false
 
+volume:
+  enabled: false
+
+mariadb:
+  enabled: false
+
 # Environment variables for MariaDB connection
-env:
+podEnv:
   - name: UPTIME_KUMA_DB_TYPE
     value: "mariadb"
   - name: UPTIME_KUMA_DB_HOSTNAME
