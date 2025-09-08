@@ -75,7 +75,7 @@ jobs:
 
 
           # Create the oci_api_key.pem file
-          echo "${{ steps.doppler_oci.outputs.OCI_POSEIDON_PRIVATE_KEY }}" > $KEY_PATH
+          echo "${{ steps.doppler_oci.outputs.OCI_API_KEY_PRIVATE }}" > $KEY_PATH
           chmod 600 ~/.oci/oci_api_key.pem
 
           # Create the config file
