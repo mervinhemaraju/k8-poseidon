@@ -6,7 +6,6 @@ metadata:
 namespace: uptimekuma
 
 resources:
-  - namespace.yaml
   - ingress.yaml
 
 helmCharts:
@@ -18,12 +17,3 @@ helmCharts:
     includeCRDs: true
     additionalValuesFiles:
       - values.yaml
-    valuesInline:
-      persistence:
-        enabled: false
-      volumes:
-        - name: storage
-          emptyDir: {}
-      volumeMounts:
-        - name: storage
-          mountPath: /app/data

@@ -181,7 +181,7 @@ jobs:
       - name: Create Required Credentials Secret
         run: |
 
-          echo "Creating requried secrets..."
+          echo "Creating required secrets..."
 
           # Create uptimekuma secrets
           kubectl create secret generic uptime-kuma-db-secret \
