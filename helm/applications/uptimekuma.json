@@ -10,6 +10,15 @@
     },
     "spec": {
         "project": "default",
+        "destination": {
+            "server": "https://kubernetes.default.svc",
+            "namespace": "uptimekuma"
+        },
+        "source": {
+            "path": "helm/src/uptimekuma",
+            "repoURL": "https://github.com/mervinhemaraju/k8-poseidon",
+            "targetRevision": "main"
+        },
         "syncPolicy": {
             "automated": {
                 "prune": true
@@ -19,14 +28,13 @@
                 "ServerSideApply=true"
             ]
         },
-        "source": {
-            "path": "helm/src/uptimekuma",
-            "repoURL": "https://github.com/mervinhemaraju/k8-poseidon",
-            "targetRevision": "main"
-        },
-        "destination": {
-            "server": "https://kubernetes.default.svc",
-            "namespace": "uptimekuma"
-        }
+        "ignoreDifferences": [
+            {
+                "group": "",
+                "kind": "Secret",
+                "name": "uptimekuma-creds",
+                "namespace": "uptimekuma"
+            }
+        ]
     }
 }
