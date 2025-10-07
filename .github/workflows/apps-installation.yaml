@@ -177,85 +177,49 @@ jobs:
 
           echo "External Secrets installation completed"
 
-      # - name: Create Cloudflare Credentials Secret
-      #   run: |
+      - name: Install Traefik
+        run: |
+          cd apps/
 
-      #     echo "Creating secret in Default Namespace"
+          echo "Installing Traefik..."
+          kubectl kustomize --enable-helm traefik/ > traefik-config.yaml
+          kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl -n traefik apply -f -
+          kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
+          kubectl -n traefik apply -f traefik-config.yaml
 
-      #     # Create the secret in default namespace (for cross-namespace access)
-      #     kubectl create secret generic cf-creds \
-      #       --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
-      #       --namespace=default \
-      #       --dry-run=client -o yaml | kubectl apply -f -
+          echo "Waiting for Traefik to be ready..."
+          kubectl wait --for=condition=ready pod -n traefik -l app.kubernetes.io/name=traefik --timeout=300s
 
-      #     echo "Creating secret in Traefik Namespace"
-      #     # Create the secret in default namespace (for cross-namespace access)
-      #     kubectl create secret generic cf-creds \
-      #       --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
-      #       --namespace=traefik \
-      #       --dry-run=client -o yaml | kubectl apply -f -
+          echo "Traefik installation completed"
 
-      #     echo "Creating secret in External-dns Namespace"
-      #     # Create the secret in default namespace (for cross-namespace access)
-      #     kubectl create secret generic cf-creds \
-      #       --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
-      #       --namespace=ed \
-      #       --dry-run=client -o yaml | kubectl apply -f -
+      - name: Install External DNS
+        run: |
+          cd apps/
 
-      # - name: Create Required Credentials Secret
-      #   run: |
+          echo "Installing External DNS..."
+          kubectl kustomize --enable-helm external-dns/ > external-dns-config.yaml
+          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl -n ed apply -f -
+          kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
+          kubectl -n ed apply -f external-dns-config.yaml
 
-      #     echo "Creating required secrets..."
+          echo "Waiting for External DNS to be ready..."
+          kubectl wait --for=condition=ready pod -n ed -l app.kubernetes.io/name=external-dns --timeout=300s
 
-      #     # Create uptimekuma secrets
-      #     kubectl create secret generic uptime-kuma-db-secret \
-      #       --from-literal=password="${{ steps.doppler_apps.outputs.UPTIMEKUMA_ADMIN_PASSWORD }}" \
-      #       --namespace=uptimekuma \
-      #       --dry-run=client -o yaml | kubectl apply -f -
+          echo "External DNS installation completed"
 
-      # - name: Install Traefik
-      #   run: |
-      #     cd apps/
+      - name: Install ArgoCD
+        run: |
+          cd apps/
 
-      #     echo "Installing Traefik..."
-      #     kubectl kustomize --enable-helm traefik/ > traefik-config.yaml
-      #     kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl -n traefik apply -f -
-      #     kfilt -i kind=CustomResourceDefinition -f traefik-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
-      #     kubectl -n traefik apply -f traefik-config.yaml
+          echo "Installing ArgoCD..."
+          kubectl kustomize --enable-helm argocd/ > argocd-config.yaml
+          kubectl -n argocd apply -f argocd-config.yaml
 
-      #     echo "Waiting for Traefik to be ready..."
-      #     kubectl wait --for=condition=ready pod -n traefik -l app.kubernetes.io/name=traefik --timeout=300s
+          echo "Waiting for ArgoCD to be ready..."
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-server --timeout=300s
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-repo-server --timeout=300s
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-redis --timeout=300s
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-dex-server --timeout=300s
+          kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-applicationset-controller --timeout=300s
 
-      #     echo "Traefik installation completed"
-
-      # - name: Install External DNS
-      #   run: |
-      #     cd apps/
-
-      #     echo "Installing External DNS..."
-      #     kubectl kustomize --enable-helm external-dns/ > external-dns-config.yaml
-      #     kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl -n ed apply -f -
-      #     kfilt -i kind=CustomResourceDefinition -f external-dns-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
-      #     kubectl -n ed apply -f external-dns-config.yaml
-
-      #     echo "Waiting for External DNS to be ready..."
-      #     kubectl wait --for=condition=ready pod -n ed -l app.kubernetes.io/name=external-dns --timeout=300s
-
-      #     echo "External DNS installation completed"
-
-      # - name: Install ArgoCD
-      #   run: |
-      #     cd apps/
-
-      #     echo "Installing ArgoCD..."
-      #     kubectl kustomize --enable-helm argocd/ > argocd-config.yaml
-      #     kubectl -n argocd apply -f argocd-config.yaml
-
-      #     echo "Waiting for ArgoCD to be ready..."
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-server --timeout=300s
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-repo-server --timeout=300s
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-redis --timeout=300s
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-dex-server --timeout=300s
-      #     kubectl wait --for=condition=ready pod -n argocd -l app.kubernetes.io/name=argocd-applicationset-controller --timeout=300s
-
-      #     echo "ArgoCD installation completed"
+          echo "ArgoCD installation completed"

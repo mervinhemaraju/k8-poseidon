@@ -44,8 +44,10 @@ podEnv:
   - name: UPTIME_KUMA_DB_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: uptime-kuma-db-secret
-        key: password
+        # Point to the new secret name
+        name: uptimekuma-creds
+        # Point to the new secret key
+        key: UPTIMEKUMA_ADMIN_PASSWORD
 
 # Node selector (optional - for ARM nodes if needed)
 nodeSelector: {}
