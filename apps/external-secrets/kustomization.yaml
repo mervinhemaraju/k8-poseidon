@@ -6,7 +6,6 @@ metadata:
 namespace: es
 
 resources:
-  # - ./ces.yaml
   - ./css.yaml
 
 helmCharts:

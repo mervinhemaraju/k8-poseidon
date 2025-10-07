@@ -1,16 +1,40 @@
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: mytestes
-spec:
-  refreshInterval: 0.03m
-  secretStoreRef:
-    kind: ClusterSecretStore
-    name: oci-vault-store # Must match SecretStore on the cluster
-  target:
-    name: anothertest # Name for the secret on the cluster
-    creationPolicy: Owner
-  data:
-    - secretKey: key
-      remoteRef:
-        key: anothertest
+# # apiVersion: external-secrets.io/v1
+# # kind: ExternalSecret
+# # metadata:
+# #   name: mytestes
+# # spec:
+# #   refreshInterval: 0.03m
+# #   secretStoreRef:
+# #     kind: ClusterSecretStore
+# #     name: oci-vault-store # Must match SecretStore on the cluster
+# #   target:
+# #     name: anothertest # Name for the secret on the cluster
+# #     creationPolicy: Owner
+# #   data:
+# #     - secretKey: key
+# #       remoteRef:
+# #         key: anothertest
+
+
+# apiVersion: external-secrets.io/v1
+# kind: ExternalSecret
+# metadata:
+#   name: cloudflare-terraform-token
+#   namespace: es
+# spec:
+#   # Reference to the ClusterSecretStore you already created
+#   secretStoreRef:
+#     name: doppler-auth-api
+#     kind: ClusterSecretStore
+
+#   # Describes the Kubernetes Secret that will be created
+#   target:
+#     name: cloudflare-creds      # Name of the Kubernetes Secret to be created
+#     creationPolicy: Owner       # The secret will be deleted when this ExternalSecret is deleted
+
+#   # Describes the data to fetch from Doppler
+#   data:
+#   - secretKey: CLOUDFLARE_TERRAFORM_TOKEN
+#     remoteRef:
+#       # 'key' points to the NAME of the secret in Doppler
+#       key: CLOUDFLARE_TERRAFORM_TOKEN

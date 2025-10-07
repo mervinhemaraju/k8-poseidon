@@ -153,21 +153,28 @@ jobs:
         run: |
           kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/${{ env.METRICS_SERVER_VERSION }}/components.yaml
 
-      - name: Create Oracle Vault IDs Secret
+      - name: Create Initial DopplerToken Generic Secret
         run: |
 
-          echo "Creating required vault IDs secrets for ESO in Default Namespace"
+          echo "Creating initial Doppler Token Secret in Default Namespace"
 
-          # 1. Parse the JSON output with jq and store each ID in a shell variable
-          CLOUDFLARE_ID=$(echo '${{ steps.doppler_oci.outputs.OCI_POSEIDON_VAULTS }}' | jq -r '.vault_ids.application_cloudflare')
-          UPTIMEKUMA_ID=$(echo '${{ steps.doppler_oci.outputs.OCI_POSEIDON_VAULTS }}' | jq -r '.vault_ids.application_uptimekuma')
-
-          # 2. Use the shell variables to create the secret
-          kubectl create secret generic vault-ids-secret \
-            --from-literal=vault_id_cloudflare="$CLOUDFLARE_ID" \
-            --from-literal=vault_id_uptimekuma="$UPTIMEKUMA_ID" \
+          kubectl create secret generic doppler-token-auth-api \
+            --from-literal=dopplerToken='${{ secrets.DOPPLER_TOKEN }}' \
             --namespace=default \
             --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Install External Secrets Operator
+        run: |
+          cd apps/
+
+          echo "Installing External Secrets..."
+          kubectl kustomize --enable-helm external-secrets/ > es-config.yaml
+          kubectl -n es apply -f es-config.yaml
+
+          echo "Waiting for external secrets to be ready..."
+          kubectl wait --for=condition=ready pod -n es -l app.kubernetes.io/name=es --timeout=300s
+
+          echo "External Secrets installation completed"
 
       # - name: Create Cloudflare Credentials Secret
       #   run: |

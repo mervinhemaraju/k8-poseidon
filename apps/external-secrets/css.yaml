@@ -1,13 +1,17 @@
-# apiVersion: external-secrets.io/v1
-# kind: ClusterSecretStore
-# metadata:
-#   name: oci-vault-store
-#   namespace: es
-# spec:
-#   provider:
-#     oracle:
-#       region: "uk-london-1"
-#       vault: "ocid1.vault.oc1.uk-london-1.erufseciaagj6.abwgiljtptfsxtdbvenga4bvlxeu6wrm7r4vokaxi6q5dlkfv32nkcb6m7ha"
-#       compartment: "ocid1.compartment.oc1..aaaaaaaa64hzfgr34jjnuvozvfjr6ks7jjweunjdn3bv2abbsmtqun6uw2iq"
-#       principalType: InstancePrincipal
-
+# Create a ClusterSecretStore for Doppler Apps Creds Projects
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: doppler-apps-creds
+  namespace: es
+spec:
+  provider:
+    doppler:
+      project: apps-creds
+      config: prd
+      auth:
+        secretRef:
+          dopplerToken:
+            namespace: default
+            name: doppler-token-auth-api
+            key: dopplerToken
