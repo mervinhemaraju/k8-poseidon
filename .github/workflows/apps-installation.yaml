@@ -158,9 +158,14 @@ jobs:
 
           echo "Creating required vault IDs secrets for ESO in Default Namespace"
 
+          # 1. Parse the JSON output with jq and store each ID in a shell variable
+          CLOUDFLARE_ID=$(echo '${{ steps.doppler_oci.outputs.OCI_POSEIDON_VAULTS }}' | jq -r '.vault_ids.application_cloudflare')
+          UPTIMEKUMA_ID=$(echo '${{ steps.doppler_oci.outputs.OCI_POSEIDON_VAULTS }}' | jq -r '.vault_ids.application_uptimekuma')
+
+          # 2. Use the shell variables to create the secret
           kubectl create secret generic vault-ids-secret \
-            --from-literal=token='test' \
-            --from-literal=anothertoken='another test' \
+            --from-literal=vault_id_cloudflare="$CLOUDFLARE_ID" \
+            --from-literal=vault_id_uptimekuma="$UPTIMEKUMA_ID" \
             --namespace=default \
             --dry-run=client -o yaml | kubectl apply -f -
 
