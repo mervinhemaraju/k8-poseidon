@@ -27,14 +27,6 @@
                 "RespectIgnoreDifferences=true",
                 "ServerSideApply=true"
             ]
-        },
-        "ignoreDifferences": [
-            {
-                "group": "",
-                "kind": "Secret",
-                "name": "uptimekuma-creds",
-                "namespace": "uptimekuma"
-            }
-        ]
+        }
     }
 }
