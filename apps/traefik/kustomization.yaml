@@ -5,6 +5,9 @@ metadata:
 
 namespace: traefik
 
+resources:
+  - ./es.yaml
+
 helmCharts:
   - name: traefik
     repo: https://traefik.github.io/charts

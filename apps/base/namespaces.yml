@@ -3,22 +3,41 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: es
+  labels:
+    app: core
+    function: secrets
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: ed
-
+  labels:
+    app: core
+    function: dns
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: traefik
+  labels:
+    app: core
+    function: ingress
 
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: argocd
+  labels:
+    app: core
+    function: gitops
 
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: uptimekuma
+  labels:
+    app: uptimekuma
+    function: monitoring

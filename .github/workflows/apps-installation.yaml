@@ -153,41 +153,29 @@ jobs:
         run: |
           kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/${{ env.METRICS_SERVER_VERSION }}/components.yaml
 
-      - name: Create Cloudflare Credentials Secret
+      - name: Create Initial DopplerToken Generic Secret
         run: |
 
-          echo "Creating secret in Default Namespace"
+          echo "Creating initial Doppler Token Secret in Default Namespace"
 
-          # Create the secret in default namespace (for cross-namespace access)
-          kubectl create secret generic cf-creds \
-            --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
+          kubectl create secret generic doppler-token-auth-api \
+            --from-literal=dopplerToken='${{ secrets.DOPPLER_TOKEN }}' \
             --namespace=default \
             --dry-run=client -o yaml | kubectl apply -f -
 
-          echo "Creating secret in Traefik Namespace"
-          # Create the secret in default namespace (for cross-namespace access)
-          kubectl create secret generic cf-creds \
-            --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
-            --namespace=traefik \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-          echo "Creating secret in External-dns Namespace"
-          # Create the secret in default namespace (for cross-namespace access)
-          kubectl create secret generic cf-creds \
-            --from-literal=dnsapitoken="${{ steps.doppler_apps.outputs.CLOUDFLARE_TERRAFORM_TOKEN }}" \
-            --namespace=ed \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Create Required Credentials Secret
+      - name: Install External Secrets Operator
         run: |
+          cd apps/
 
-          echo "Creating required secrets..."
+          echo "Installing External Secrets..."
 
-          # Create uptimekuma secrets
-          kubectl create secret generic uptime-kuma-db-secret \
-            --from-literal=password="${{ steps.doppler_apps.outputs.UPTIMEKUMA_ADMIN_PASSWORD }}" \
-            --namespace=uptimekuma \
-            --dry-run=client -o yaml | kubectl apply -f -
+          # Install external-secrets
+          kubectl kustomize --enable-helm external-secrets/ > external-secrets-config.yaml
+          kfilt -i kind=CustomResourceDefinition -f external-secrets-config.yaml | kubectl -n es apply -f -
+          kfilt -i kind=CustomResourceDefinition -f external-secrets-config.yaml | kubectl wait --for condition=established --timeout=60s -f -
+          kubectl -n es apply -f external-secrets-config.yaml
+
+          echo "External Secrets installation completed"
 
       - name: Install Traefik
         run: |
