@@ -1,0 +1,16 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: mytestes
+spec:
+  refreshInterval: 0.03m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: oci-vault-store # Must match SecretStore on the cluster
+  target:
+    name: anothertest # Name for the secret on the cluster
+    creationPolicy: Owner
+  data:
+    - secretKey: key
+      remoteRef:
+        key: anothertest
