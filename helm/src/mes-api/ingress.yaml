@@ -13,7 +13,7 @@ spec:
   routes:
     - kind: Rule
       # IMPORTANT: Replace with the domain you want to use for your API
-      match: Host(`mes-test.plagueworks.org`)
+      match: Host(`staging-mes.plagueworks.org`)
       services:
         - name: mes-api-service # This must match the name of your Service
           port: 80 # This must match the port exposed by your Service
