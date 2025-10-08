@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: mesapi
+  name: mes-api-deployment
+  labels:
+    app: mes-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mes-api
+  template:
+    metadata:
+      labels:
+        app: mes-api
+    spec:
+      containers:
+      - name: mes-api
+        imagePullPolicy: Always
+        image: ghcr.io/mervinhemaraju/mauritius-emergency-service-api:prod
+        env:
+        - name: UWSGI_PROTOCOL
+          value: "http"
+        - name: MAIL_USERNAME
+          value: "your_value_one"
+        - name: MAIL_PASSWORD
+          value: "your_value_two"
+        ports:
+        - containerPort: 8081
+        
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
