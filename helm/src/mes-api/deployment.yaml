@@ -28,7 +28,7 @@ spec:
         # Health checks
         livenessProbe:
           httpGet:
-            path: /v1/health
+            path: /health
             port: 8081
           initialDelaySeconds: 15
           periodSeconds: 20
@@ -37,7 +37,7 @@ spec:
         
         readinessProbe:
           httpGet:
-            path: /v1/health
+            path: /health
             port: 8081
           initialDelaySeconds: 5
           periodSeconds: 10
