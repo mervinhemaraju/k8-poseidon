@@ -18,17 +18,33 @@ spec:
       containers:
       - name: mes-api
         imagePullPolicy: Always
-        image: ghcr.io/mervinhemaraju/mauritius-emergency-service-api:prod
+        image: ghcr.io/mervinhemaraju/mauritius-emergency-service-api:dev
         env:
         - name: UWSGI_PROTOCOL
           value: "http"
-        - name: MAIL_USERNAME
-          value: "your_value_one"
-        - name: MAIL_PASSWORD
-          value: "your_value_two"
         ports:
         - containerPort: 8081
         
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        # Resource limits
         resources:
           limits:
             memory: "512Mi"
