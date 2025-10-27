@@ -6,14 +6,15 @@ metadata:
 namespace: argocd
 
 resources:
+  - es.yaml 
   - ingress.yaml
   - project.yaml
   - default-application.yaml
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 patches:
-  - path: cm.yaml
-  - path: rbac-cm.yaml
+  - path: ./patches/cm.yaml
+  - path: ./patches/rbac-cm.yaml
 
 configMapGenerator:
   - name: argocd-cmd-params-cm

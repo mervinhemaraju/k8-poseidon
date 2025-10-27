@@ -12,3 +12,9 @@ data:
     p, th3pl4gu3, logs, get, */*, allow
     p, th3pl4gu3, exec, create, */*, allow
     p, th3pl4gu3, projects, get, *, allow
+    
+    # --- Auth0 Group Rules ---
+    g, auth0, role:admin
+
+    # --- AZURE AD Rules ---
+    g, azure, role:admin
