@@ -3,7 +3,7 @@
     "kind": "Application",
     "metadata": {
         "name": "github-arc",
-        "namespace": "github-arc",
+        "namespace": "argocd",
         "finalizers": [
             "resources-finalizer.argocd.argoproj.io"
         ]
@@ -17,11 +17,15 @@
         "source": {
             "path": "helm/src/github/arc",
             "repoURL": "https://github.com/mervinhemaraju/k8-poseidon",
-            "targetRevision": "main"
+            "targetRevision": "main",
+            "kustomize": {
+                "enableHelm": true
+            }
         },
         "syncPolicy": {
             "automated": {
-                "prune": true
+                "prune": true,
+                "selfHeal": true
             },
             "syncOptions": [
                 "RespectIgnoreDifferences=true",

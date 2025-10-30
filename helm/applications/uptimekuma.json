@@ -21,7 +21,8 @@
         },
         "syncPolicy": {
             "automated": {
-                "prune": true
+                "prune": true,
+                "selfHeal": true
             },
             "syncOptions": [
                 "RespectIgnoreDifferences=true",
