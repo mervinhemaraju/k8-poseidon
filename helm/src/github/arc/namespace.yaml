@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: github-arc
+  labels:
+    app: github-arc
+    function: application

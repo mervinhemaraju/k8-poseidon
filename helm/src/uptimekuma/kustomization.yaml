@@ -6,6 +6,7 @@ metadata:
 namespace: uptimekuma
 
 resources:
+  - namespace.yaml
   - ingress.yaml
   - es.yaml
 

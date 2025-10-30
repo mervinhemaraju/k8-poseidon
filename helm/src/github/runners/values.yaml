@@ -1,0 +1,10 @@
+githubConfigUrl: https://github.com/plagueworks-org
+githubConfigSecret: github-runner-secret
+maxRunners: 2
+minRunners: 1
+
+
+# Explicitly set the controller service account to avoid auto-discovery
+controllerServiceAccount:
+  namespace: github-arc
+  name: arc-controller-gha-rs-controller
