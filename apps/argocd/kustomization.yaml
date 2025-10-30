@@ -10,7 +10,8 @@ resources:
   - ingress.yaml
   - project.yaml
   - default-application.yaml
-  - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  # - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  - kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.1.9/manifests/install.yaml
 
 patches:
   - path: ./patches/cm.yaml
