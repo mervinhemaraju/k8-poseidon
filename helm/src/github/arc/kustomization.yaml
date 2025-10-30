@@ -9,4 +9,4 @@ helmCharts:
     version: 0.9.3
     releaseName: arc-controller
     namespace: github-arc
-    includeCRDs: false
+    includeCRDs: true

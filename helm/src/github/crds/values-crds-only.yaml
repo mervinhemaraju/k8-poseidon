@@ -1,6 +1,0 @@
-# helm/src/github/arc-crds/values-crds-only.yaml
-#
-# NOTE: You must confirm this value from the chart's 'values.yaml'.
-# It might be 'manager: { enabled: false }' or 'controller: { enabled: false }'.
-# This example assumes 'enabled: false' disables the controller.
-enabled: false

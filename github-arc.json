@@ -17,10 +17,7 @@
         "source": {
             "path": "helm/src/github/arc",
             "repoURL": "https://github.com/mervinhemaraju/k8-poseidon",
-            "targetRevision": "main",
-            "kustomize": {
-                "enableHelm": true
-            }
+            "targetRevision": "main"
         },
         "syncPolicy": {
             "automated": {
