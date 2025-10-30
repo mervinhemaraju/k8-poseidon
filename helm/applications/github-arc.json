@@ -32,44 +32,6 @@
                 "ServerSideApply=true",
                 "Replace=true"
             ]
-        },
-        "ignoreDifferences": [
-            {
-                "group": "apiextensions.k8s.io",
-                "kind": "CustomResourceDefinition",
-                "name": "autoscalinglisteners.actions.github.com",
-                "jsonPointers": [
-                    "/metadata/annotations",
-                    "/status"
-                ]
-            },
-            {
-                "group": "apiextensions.k8s.io",
-                "kind": "CustomResourceDefinition",
-                "name": "autoscalingrunnersets.actions.github.com",
-                "jsonPointers": [
-                    "/metadata/annotations",
-                    "/status"
-                ]
-            },
-            {
-                "group": "apiextensions.k8s.io",
-                "kind": "CustomResourceDefinition",
-                "name": "ephemeralrunners.actions.github.com",
-                "jsonPointers": [
-                    "/metadata/annotations",
-                    "/status"
-                ]
-            },
-            {
-                "group": "apiextensions.k8s.io",
-                "kind": "CustomResourceDefinition",
-                "name": "ephemeralrunnersets.actions.github.com",
-                "jsonPointers": [
-                    "/metadata/annotations",
-                    "/status"
-                ]
-            }
-        ]
+        }
     }
 }
