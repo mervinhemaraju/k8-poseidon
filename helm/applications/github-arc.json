@@ -37,9 +37,37 @@
             {
                 "group": "apiextensions.k8s.io",
                 "kind": "CustomResourceDefinition",
-                "jqPathExpressions": [
-                    ".spec.conversion.webhook.clientConfig.caBundle",
-                    ".metadata.annotations"
+                "name": "autoscalinglisteners.actions.github.com",
+                "jsonPointers": [
+                    "/metadata/annotations",
+                    "/status"
+                ]
+            },
+            {
+                "group": "apiextensions.k8s.io",
+                "kind": "CustomResourceDefinition",
+                "name": "autoscalingrunnersets.actions.github.com",
+                "jsonPointers": [
+                    "/metadata/annotations",
+                    "/status"
+                ]
+            },
+            {
+                "group": "apiextensions.k8s.io",
+                "kind": "CustomResourceDefinition",
+                "name": "ephemeralrunners.actions.github.com",
+                "jsonPointers": [
+                    "/metadata/annotations",
+                    "/status"
+                ]
+            },
+            {
+                "group": "apiextensions.k8s.io",
+                "kind": "CustomResourceDefinition",
+                "name": "ephemeralrunnersets.actions.github.com",
+                "jsonPointers": [
+                    "/metadata/annotations",
+                    "/status"
                 ]
             }
         ]
