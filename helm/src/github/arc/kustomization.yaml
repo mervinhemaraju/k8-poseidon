@@ -3,9 +3,6 @@ kind: Kustomization
 
 namespace: github-arc
 
-resources:
-  - namespace.yaml
-
 helmCharts:
   - name: gha-runner-scale-set-controller
     repo: oci://ghcr.io/actions/actions-runner-controller-charts

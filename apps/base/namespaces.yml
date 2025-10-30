@@ -41,3 +41,21 @@ metadata:
   labels:
     app: uptimekuma
     function: monitoring
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: github-arc
+  labels:
+    app: github
+    function: runners
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: github-runners
+  labels:
+    app: github
+    function: runners
