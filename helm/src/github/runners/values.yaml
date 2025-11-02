@@ -23,6 +23,7 @@ template:
     containers:
       - name: runner
         image: ghcr.io/mervinhemaraju/runner-image-github:latest
+        imagePullPolicy: Always
         command: ["/home/runner/run.sh"]
         # env:
         #   # Environment variables
