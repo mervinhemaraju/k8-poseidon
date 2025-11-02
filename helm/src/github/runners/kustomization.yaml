@@ -5,6 +5,7 @@ namespace: github-runners
 
 resources:
   - es.yaml
+  - mounted-secrets.yaml
 
 helmCharts:
   - name: gha-runner-scale-set
