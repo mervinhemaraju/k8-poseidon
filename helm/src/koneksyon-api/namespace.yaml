@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: koneksyonapi
+  labels:
+    app: koneksyon-api
+    function: application
+    es: ghcr

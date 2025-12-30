@@ -7,6 +7,7 @@ namespace: es
 
 resources:
   - ./css.yaml
+  - ./ces.yaml
 
 helmCharts:
   - name: external-secrets

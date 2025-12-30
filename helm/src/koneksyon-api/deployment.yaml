@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: koneksyon-api
+  namespace: koneksyonapi
+  labels:
+    app: koneksyon-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: koneksyon-api
+  template:
+    metadata:
+      labels:
+        app: koneksyon-api
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - name: koneksyon-api
+          image: ghcr.io/zanbalak/koneksyon-api:dev
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+            - name: ASPNETCORE_URLS
+              value: "http://+:8080"
