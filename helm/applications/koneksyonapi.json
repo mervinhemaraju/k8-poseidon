@@ -2,7 +2,7 @@
     "apiVersion": "argoproj.io/v1alpha1",
     "kind": "Application",
     "metadata": {
-        "name": "mesapi",
+        "name": "koneksyonapi",
         "namespace": "argocd",
         "finalizers": [
             "resources-finalizer.argocd.argoproj.io"
@@ -12,10 +12,10 @@
         "project": "default",
         "destination": {
             "server": "https://kubernetes.default.svc",
-            "namespace": "mesapi"
+            "namespace": "koneksyonapi"
         },
         "source": {
-            "path": "helm/src/mes-api",
+            "path": "helm/src/koneksyon-api",
             "repoURL": "https://github.com/mervinhemaraju/k8-poseidon",
             "targetRevision": "main"
         },
